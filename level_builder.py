@@ -21,8 +21,6 @@ while not exit_game:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             exit_game = True
-        if event.type == pg.MOUSEBUTTONDOWN:
-            print(clicked_tile(*pg.mouse.get_pos()))
     win.blit(img,(0,0))
     answ = []
     for i in range(0,tiles_row):

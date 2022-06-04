@@ -1,4 +1,5 @@
 import pygame as pg
+import numpy as np
 import math
 from Player import Player
 from Bullet import Bullet
@@ -90,10 +91,10 @@ class MainMenu:
 
 def redrawGameWindow(win):
     backgrounds.main(win)
-
     walls_group.update(win)
     walls_group.draw(win)
-
+    player_group.update(win)
+    player_group.draw(win)
     bullets_group.update(win)
     bullets_group.draw(win)
     for enemy in enemies:
@@ -101,36 +102,32 @@ def redrawGameWindow(win):
 
     pg.draw.rect(win, (255, 0, 0), (player.screen_x, player.screen_y, 4, 4))
     pg.draw.rect(win, (255, 0, 0), (60, 30, 20 * player.health, 20))
-    player_group.update(win)
-    player_group.draw(win)
+
     pg.display.update()
 
 
 def main():
     pg.init()
     win = pg.display.set_mode((win_width, win_height))
-    pg.display.set_caption("Second attempt")
-    exitgame = 0
-
-    global is_walk
-
-
-
-    width = 40
-    height = 60
+    pg.display.set_caption("Shooter_Maze")
+    exitgame = False
 
 
     while not exitgame:
-        time_passed = clock.tick()
+        time_passed = clock.tick(50)
+        print(time_passed)
         time_passed /= 1000
+        print(time_passed)
         vel = base_vel*time_passed
+        player.set_speed(vel)
+
 
         mouse_x, mouse_y = pg.mouse.get_pos()
         map_mouse_x, map_mouse_y = location_on_map(player.x, player.y, mouse_x, mouse_y)  # position of mouse on map
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                exitgame = 1
+                exitgame = True
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     bullets_group.add(Bullet(player.x, player.y, map_mouse_x, map_mouse_y, player))
@@ -148,7 +145,7 @@ def main():
         for bullet in bullets_group:
             if not (-map_width< bullet.rect.topleft[0]<map_width and -map_height<bullet.rect.topleft[1]<map_height):
                 bullets_group.remove(bullet)
-
+            bullet.set_speed(vel)
 
         right_block = False
         left_block = False
@@ -156,7 +153,7 @@ def main():
         up_block = False
 
         #detect collision
-        barrier_adj = 2 + player.width/3
+        barrier_adj = 5 + player.width/3
         for w in walls_group:
 
             if w.rect.collidepoint(player.screen_x+vel+barrier_adj,player.screen_y-player.width/3) or \
@@ -176,29 +173,31 @@ def main():
 
         keys = pg.key.get_pressed()
         k_pressed = False
+        player_move_vector = [0,0]
         if keys[pg.K_a] and player.x > vel and not left_block:
             k_pressed = True
-            player.x -= vel
+            player_move_vector = np.add(player_move_vector, [-1, 0]).tolist()
             player.walking = True
 
         if keys[pg.K_d] and player.x + 1 < map_width - vel - player.width / 2 and not right_block:
             k_pressed = True
-            player.x += vel
+            player_move_vector = np.add(player_move_vector, [1, 0]).tolist()
             player.walking = True
 
         if keys[pg.K_w] and player.y - 1 > vel and not up_block:
             k_pressed = True
-            player.y -= vel
+            player_move_vector = np.add(player_move_vector, [0, -1]).tolist()
             player.walking = True
 
         if keys[pg.K_s] and player.y + 1 < map_height - vel - player.width / 2 and not down_block:
             k_pressed = True
-            player.y += vel
+            player_move_vector = np.add(player_move_vector, [0, 1]).tolist()
             player.walking = True
 
         if not k_pressed:
             player.walking = False
 
+        player.move(player_move_vector)
         redrawGameWindow(win)
 
 
