@@ -10,9 +10,8 @@ class Wall(pg.sprite.Sprite):
         self.pos_x = pos_x*WALL_WIDTH
         self.pos_y = pos_y*WALL_WIDTH
         self.rect = pg.rect.Rect(self.pos_x,self.pos_y,self.width,self.height)
-        self.player_x = 0
-        self.player_y = 0
-        self.rect.topleft = list(location_on_screen(self.player_x, self.player_y, pos_x, pos_y))
+        
+        self.rect.topleft = list(location_on_screen(0, 0, pos_x, pos_y))
         self.image_src = wall_img
         self.image = pg.surface.Surface((self.width,self.height))
         # self.image_src = pg.transform.scale(self.image_src,(500, 500))
@@ -22,13 +21,10 @@ class Wall(pg.sprite.Sprite):
             for j in range(self.height // self.image_src.get_height() + 1):
                     self.image.blit(self.image_src,(i*self.image_src.get_width(),j*self.image_src.get_height()))
 
-    def update(self,win):
-        self.rect.topleft = list(location_on_screen(self.player_x, self.player_y, self.pos_x, self.pos_y))
-        # pg.draw.rect(win,(255,0,0),self.rect)
-
-    def get_player_pos(self,x,y):
-        self.player_x = x
-        self.player_y = y
+    def update(self,win,player_x,player_y):
+        
+        self.rect.topleft = list(location_on_screen(player_x, player_y, self.pos_x, self.pos_y))
+        pg.draw.rect(win,(255,0,0),self.rect)
 
 
 

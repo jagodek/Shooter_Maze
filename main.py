@@ -9,6 +9,7 @@ from functions import *
 from game_params import win_width, win_height, walking, bg, map_width, map_height, walls_coords
 
 
+
 class Enemy(object):
     def __init__(self, x, y):
         self.x = x
@@ -91,7 +92,7 @@ class MainMenu:
 
 def redrawGameWindow(win):
     backgrounds.main(win)
-    walls_group.update(win)
+    walls_group.update(win,player.x,player.y)
     walls_group.draw(win)
     player_group.update(win)
     player_group.draw(win)
@@ -169,7 +170,6 @@ def main():
                     w.rect.collidepoint(player.screen_x+player.width/3,player.screen_y-vel-barrier_adj):
                 up_block = True
 
-            w.get_player_pos(player.x,player.y)
 
         keys = pg.key.get_pressed()
         k_pressed = False
@@ -213,7 +213,7 @@ if __name__ == '__main__':
     enemies = []#Enemy(10,10)]
     walls_group = pg.sprite.Group()
     for wall in walls_coords:
-        walls_group.add(Wall(1,1,*wall))
+        walls_group.add(Wall(1,1,wall[0],wall[1]))
 
     backgrounds = Backgrounds()
     main()
