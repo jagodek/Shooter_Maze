@@ -13,10 +13,11 @@ class Wall(pg.sprite.Sprite):
         
         self.rect.topleft = list(location_on_screen(0, 0, pos_x, pos_y))
         self.image_src = wall_img
+        # self.image_src = pg.transform.scale(self.image_src, (WALL_WIDTH,WALL_WIDTH))
         self.image = pg.surface.Surface((self.width,self.height))
         # self.image_src = pg.transform.scale(self.image_src,(500, 500))
+        
         # repeats the wall img pattern
-
         for i in range(self.width // self.image_src.get_width() + 1):
             for j in range(self.height // self.image_src.get_height() + 1):
                     self.image.blit(self.image_src,(i*self.image_src.get_width(),j*self.image_src.get_height()))

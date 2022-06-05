@@ -31,10 +31,10 @@ class Player(pg.sprite.Sprite):
         if self.walking:
             self.animation_count += 1
         mouse_x, mouse_y = pg.mouse.get_pos()
-        if (win_width / 2 - mouse_y) ** 2 + (win_height / 2 - mouse_x) ** 2 > 1:
+        if (WIN_WIDTH / 2 - mouse_y) ** 2 + (WIN_HEIGHT / 2 - mouse_x) ** 2 > 1:
             self.angle = -math.atan2(self.screen_y - mouse_y, self.screen_x - mouse_x) * 180 / math.pi + 90
 
-        rep_frames = 10
+        rep_frames = 5
         if self.animation_count + 1 >= rep_frames*len(walking):
             self.animation_count = 0
 

@@ -1,17 +1,17 @@
 from http.client import ImproperConnectionState
 import pygame as pg
-from game_params import map_width,map_height,win_height,win_width,WALL_WIDTH
+from game_params import MAP_WIDTH,MAP_HEIGHT,WIN_HEIGHT,WIN_WIDTH,WALL_WIDTH
 import os
 
 exit_game = False
-tiles_row = map_width//WALL_WIDTH
-tile_width = win_width//tiles_row
+tiles_row = MAP_WIDTH//WALL_WIDTH
+tile_width = WIN_WIDTH//tiles_row
 pg.init()
-win = pg.display.set_mode((win_width,win_height))
+win = pg.display.set_mode((WIN_WIDTH,WIN_HEIGHT))
 
 pth = os.path.join("textures","map_template.jpg")
 img = pg.image.load(pth)
-img = pg.transform.scale(img,(win_width,win_height))
+img = pg.transform.scale(img,(WIN_WIDTH,WIN_HEIGHT))
 
 
 def clicked_tile(x,y):
@@ -42,8 +42,8 @@ while not exit_game:
 
 
 
-        pg.draw.line(win, (255, 0, 0), (0,i * tile_width), (win_width,i * tile_width))
-        pg.draw.line(win,(255,0,0),(i*tile_width,0),(i*tile_width,win_height))
+        pg.draw.line(win, (255, 0, 0), (0,i * tile_width), (WIN_WIDTH,i * tile_width))
+        pg.draw.line(win,(255,0,0),(i*tile_width,0),(i*tile_width,WIN_HEIGHT))
     pg.display.update()
 
 print(answ)
