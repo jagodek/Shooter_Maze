@@ -1,5 +1,7 @@
+from http.client import ImproperConnectionState
 import pygame as pg
 from game_params import map_width,map_height,win_height,win_width,WALL_WIDTH
+import os
 
 exit_game = False
 tiles_row = map_width//WALL_WIDTH
@@ -7,7 +9,8 @@ tile_width = win_width//tiles_row
 pg.init()
 win = pg.display.set_mode((win_width,win_height))
 
-img = pg.image.load(r"textures\map_template.jpg")
+pth = os.path.join("textures","map_template.jpg")
+img = pg.image.load(pth)
 img = pg.transform.scale(img,(win_width,win_height))
 
 
