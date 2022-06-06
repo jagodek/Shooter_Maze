@@ -182,9 +182,7 @@ def play_game(WIN):
     WIN.fill("black")
     while True:
         time_passed = clock.tick(50)
-        print(time_passed)
-        time_passed /= 1000
-        print(time_passed)
+        time_passed /= 1000 #time passed since lat frame in seconds
         vel = base_vel*time_passed
         player.set_speed(vel)
 

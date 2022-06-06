@@ -49,7 +49,6 @@ class Player(pg.sprite.Sprite):
         # pg.draw.rect(win,(255,0,0),self.rect)
 
     def set_speed(self, val):
-        print(self.speed)
         self.speed = val
 
     def move(self, vector):
