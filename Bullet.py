@@ -30,7 +30,7 @@ class Bullet(pg.sprite.Sprite):
         self.x_vel = math.cos(self.angle) * self.speed
         self.y_vel = math.sin(self.angle) * self.speed
 
-        gun_sound.play()
+        # gun_sound.play()
         # print(self.angle,self.x_vel,self.y_vel)
 
     def update(self, win):

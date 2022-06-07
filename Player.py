@@ -1,6 +1,6 @@
 import pygame as pg
 import numpy as np
-from math import sqrt
+
 from functions import *
 import math
 from game_params import walking
@@ -52,9 +52,9 @@ class Player(pg.sprite.Sprite):
         self.speed = val
 
     def move(self, vector):
-        n = sqrt(sum([i**2 for i in vector]))
+        n = math.sqrt(sum([i**2 for i in vector]))
         if n != 0:
-            vector = [i/n for i in vector]
+            vector = [i/n for i in vector]  
 
         self.x += vector[0]*self.speed
         self.y += vector[1]*self.speed

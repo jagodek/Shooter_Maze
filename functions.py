@@ -1,4 +1,6 @@
-from game_params import WIN_WIDTH, MAP_WIDTH, WIN_HEIGHT, MAP_HEIGHT
+from cmath import inf
+from game_params import WIN_WIDTH, MAP_WIDTH, WIN_HEIGHT, MAP_HEIGHT, WALLS_CORDS, WALL_WIDTH
+import numpy as np
 
 
 # returns location on screen based on location of player and location of self
@@ -36,3 +38,12 @@ def location_on_map(x_player, y_player, x_self, y_self):
         y = y_self - WIN_HEIGHT / 2 + y_player
 
     return x, y
+
+
+            
+    
+    
+                
+                
+                
+    

@@ -8,7 +8,9 @@ from Player import Player
 from Bullet import Bullet
 from Wall import Wall
 from Button import Button
+from Enemy import Enemy
 from functions import *
+
 
 from game_params import WIN_WIDTH, WIN_HEIGHT, walking, bg, MAP_WIDTH, MAP_HEIGHT, WALLS_CORDS
 
@@ -18,69 +20,6 @@ BG = pygame.image.load(Path("textures/assets/Background.png"))
 
 def get_font(size): # Returns Press-Start-2P in the desired size
     return pygame.font.Font(Path("textures/assets/font.ttf"), size)
-
-class Enemy(object):
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.screen_x = None
-        self.screen_y = None
-        self.width = walking[0].get_width()
-        self.height = walking[0].get_height()
-        self.animation_count = 0
-        self.walking = False
-        self.health = 10
-        self.hitbox = None
-        self.shot_wait = 0
-        self.shot_fire = 12
-        self.speed = 9
-
-    def main(self, win):
-        self.screen_x, self.screen_y = location_on_screen(
-            player.x, player.y, self.x, self.y)
-
-        self.hitbox = pygame.Rect(self.screen_x, self.screen_y, 0, 0).inflate(
-            self.width / 2, self.height / 2)
-
-        pygame.draw.rect(win, (255, 0, 0), (self.screen_x,
-                     self.screen_y + 20, 20 * self.health, 20))
-
-        # walks toward player
-        angle = math.atan2(self.y - player.y, self.x - player.x)
-        self.x_vel = math.cos(angle) * self.speed
-        self.y_vel = math.sin(angle) * self.speed
-        y_dist = self.y - player.y
-        x_dist = self.x - player.x
-        dist = math.hypot(y_dist, x_dist)
-        if dist > 10 and dist < 1000:
-            self.walking = True
-            self.x -= int(self.x_vel)
-            self.y -= int(self.y_vel)
-        else:
-            self.walking = False
-
-        # walking animation
-        if self.walking:
-            self.animation_count += 1
-        aim_x, aim_y = player.screen_x, player.screen_y
-        if (WIN_WIDTH / 2 - aim_y) ** 2 + (WIN_HEIGHT / 2 - aim_x) ** 2 > 1:
-            self.angle = -math.atan2(self.screen_y - aim_y,
-                                     self.screen_x - aim_x) * 180 / math.pi + 90
-        if self.animation_count + 1 >= 24:
-            self.animation_count = 0
-        img_copy = pygame.transform.rotate(
-            walking[self.animation_count // 3], self.angle)
-        img_copy.set_colorkey((0, 0, 0))
-        win.blit(img_copy,
-                 (self.screen_x - int(img_copy.get_width() / 2), self.screen_y - int(img_copy.get_height() / 2)))
-
-        # shooting
-        self.shot_wait += 1
-        if self.shot_wait == self.shot_fire:
-            self.shot_wait = 0
-            playerBullets.append(
-                Bullet(self.x, self.y, player.x, player.y, self))
-
 
 class Backgrounds:
     def __init__(self):
@@ -101,7 +40,7 @@ class Backgrounds:
     
 
 
-def redrawGameWindow(win):
+def redrawGameWindow(win,vel):
     backgrounds.main(win)
     walls_group.update(win, player.x, player.y)
     walls_group.draw(win)
@@ -109,8 +48,8 @@ def redrawGameWindow(win):
     player_group.draw(win)
     bullets_group.update(win)
     bullets_group.draw(win)
-    for enemy in enemies:
-        enemy.main(win)
+    enemy_group.update(win,player.x,player.y,playerBullets,vel)
+    enemy_group.draw(win)
 
     pygame.draw.rect(win, (255, 0, 0), (player.screen_x, player.screen_y, 4, 4))
     pygame.draw.rect(win, (255, 0, 0), (60, 30, 20 * player.health, 20))
@@ -182,7 +121,7 @@ def play_game(WIN):
     WIN.fill("black")
     while True:
         time_passed = clock.tick(50)
-        time_passed /= 1000 #time passed since lat frame in seconds
+        time_passed /= 1000 #time passed since lat frame in secon
         vel = base_vel*time_passed
         player.set_speed(vel)
 
@@ -220,7 +159,7 @@ def play_game(WIN):
         handle_keys(vel,right_block, left_block, down_block, up_block)
     
         
-        redrawGameWindow(WIN)
+        redrawGameWindow(WIN,vel)
         
 def main_menu(WIN,exitgame):
     
@@ -277,12 +216,15 @@ if __name__ == '__main__':
     base_vel = 300
     player_size = (walking[0].get_width() + walking[0].get_height())/2
     player_group = pygame.sprite.Group()
-    player = Player(player_size, WIN_WIDTH / 4 * 3, WIN_HEIGHT / 3 * 4)
+    player = Player(player_size, WALL_WIDTH*2,WALL_WIDTH*2 )
     player_group.add(player)
     clock = pygame.time.Clock()
     bullets_group = pygame.sprite.Group()
     playerBullets = []
-    enemies = []  # Enemy(10,10)]
+    enemy_group = pygame.sprite.Group()
+    enemies = [ Enemy(WALL_WIDTH*3,WALL_WIDTH*3)]
+    for enemy in enemies:
+        enemy_group.add(enemy)
     walls_group = pygame.sprite.Group()
     for wall in WALLS_CORDS:
         walls_group.add(Wall(1, 1, wall[0], wall[1]))
