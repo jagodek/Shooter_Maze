@@ -40,7 +40,12 @@ def location_on_map(x_player, y_player, x_self, y_self):
     return x, y
 
 
-            
+
+def is_wall(x, y):
+    for i in WALLS_CORDS:
+        if i[0]<x <i[0]+WALL_WIDTH and i[1]<y<i[1]+WALL_WIDTH:
+            return True
+    return False
     
     
                 

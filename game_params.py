@@ -43,7 +43,6 @@ for x in range(dim[0]):
             for j in [-1,1]:
                     if (x,y+j) not in WALLS_CORDS and dim[1]>y+j>=0 : 
                         neighbours.append((x,y+j))
-                        
             EDGES[(x,y)] = neighbours
             
 

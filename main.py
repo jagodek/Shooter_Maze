@@ -1,3 +1,4 @@
+from re import L
 import pygame
 import os
 import numpy as np
@@ -12,14 +13,17 @@ from Enemy import Enemy
 from functions import *
 
 
+
 from game_params import WIN_WIDTH, WIN_HEIGHT, walking, bg, MAP_WIDTH, MAP_HEIGHT, WALLS_CORDS
+
 
 
 BG = pygame.image.load(Path("textures/assets/Background.png"))
 
 
-def get_font(size): # Returns Press-Start-2P in the desired size
+def get_font(size):  # Returns Press-Start-2P in the desired size
     return pygame.font.Font(Path("textures/assets/font.ttf"), size)
+
 
 class Backgrounds:
     def __init__(self):
@@ -36,33 +40,42 @@ class Backgrounds:
             win.blit(bg, (screen_x, screen_y))
 
 
-
-    
-
-
-def redrawGameWindow(win,vel):
+def redrawGameWindow(win, vel):
     backgrounds.main(win)
     walls_group.update(win, player.x, player.y)
     walls_group.draw(win)
     player_group.update(win)
     player_group.draw(win)
-    bullets_group.update(win)
-    bullets_group.draw(win)
-    enemy_group.update(win,player.x,player.y,playerBullets,vel)
+    player_bullets.update(win, vel, player.x, player.y)
+    player_bullets.draw(win)
+    enemy_bullets.update(win,  vel, player.x, player.y)
+    enemy_bullets.draw(win)
+    enemy_group.update(win, player.x, player.y, playerBullets, vel)
     enemy_group.draw(win)
 
-    pygame.draw.rect(win, (255, 0, 0), (player.screen_x, player.screen_y, 4, 4))
+    pygame.draw.rect(win, (255, 0, 0),
+                     (player.screen_x, player.screen_y, 4, 4))
     pygame.draw.rect(win, (255, 0, 0), (60, 30, 20 * player.health, 20))
 
     pygame.display.update()
 
 
-def handle_bullet(bullets_group, vel):
-    pygame.sprite.groupcollide(bullets_group, walls_group, True, False)
-    for bullet in bullets_group:
+def handle_bullet(player_bullets,enemy_bullets, vel):
+    pygame.sprite.groupcollide(player_bullets, walls_group, True, False)
+    pygame.sprite.groupcollide(enemy_bullets, walls_group, True, False)
+    bull = pygame.sprite.groupcollide(enemy_bullets, player_group,True, False)
+    for i in bull:
+        if 'Player' in repr(bull[i]):
+            player.take_damage()
+            break
+    bull = pygame.sprite.groupcollide( enemy_group,player_bullets,False, True)
+    for i in bull:
+        if 'Enemy' in repr(i):
+            i.take_damage()
+            break
+    for bullet in player_bullets:
         if not (-MAP_WIDTH < bullet.rect.topleft[0] < MAP_WIDTH and -MAP_HEIGHT < bullet.rect.topleft[1] < MAP_HEIGHT):
-            bullets_group.remove(bullet)
-        bullet.set_speed(vel)
+            player_bullets.remove(bullet)
 
 
 def detect_collision(walls_group, vel):
@@ -87,7 +100,7 @@ def detect_collision(walls_group, vel):
     return (right_block, left_block, down_block, up_block)
 
 
-def handle_keys(vel,right_block, left_block, down_block, up_block):
+def handle_keys(vel, right_block, left_block, down_block, up_block):
     keys = pygame.key.get_pressed()
     k_pressed = False
     player_move_vector = [0, 0]
@@ -119,9 +132,10 @@ def handle_keys(vel,right_block, left_block, down_block, up_block):
 
 def play_game(WIN):
     WIN.fill("black")
+    points = 0
     while True:
         time_passed = clock.tick(50)
-        time_passed /= 1000 #time passed since lat frame in secon
+        time_passed /= 1000  # time passed since lat frame in secon
         vel = base_vel*time_passed
         player.set_speed(vel)
 
@@ -133,57 +147,51 @@ def play_game(WIN):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-                
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    bullets_group.add(
+                    player_bullets.add(
                         Bullet(player.x, player.y, map_mouse_x, map_mouse_y, player))
 
-        
         # for i in playerBullets:
         #     point = i.x_screen, i.y_screen
-            #     if i.source != player and player.health > 0:
-        #         player.health -= 1
         #     for e in enemies:
         #         if i.source == player and e.hitbox.collidepoint(point):
-        #             e.health -= 1
+        #             e.take_damage()
 
         # removes bullet outside the map
-        handle_bullet(bullets_group, vel)
-
-        
+        handle_bullet(player_bullets,enemy_bullets, vel)
 
         # detect collision
-        right_block, left_block, down_block, up_block = detect_collision(walls_group, vel)
+        right_block, left_block, down_block, up_block = detect_collision(
+            walls_group, vel)
 
-        handle_keys(vel,right_block, left_block, down_block, up_block)
-    
-        
-        redrawGameWindow(WIN,vel)
-        
-def main_menu(WIN,exitgame):
-    
+        handle_keys(vel, right_block, left_block, down_block, up_block)
+
+        redrawGameWindow(WIN, vel)
+
+
+def main_menu(WIN, exitgame):
+
     WIN.fill("black")
     while True:
-        WIN.blit(BG, (0,0))
+        WIN.blit(BG, (0, 0))
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
         MENU_TEXT = get_font(50).render("MAIN MENU", True, "#b68f40")
         MENU_RECT = MENU_TEXT.get_rect(center=(WIN_WIDTH//2, WIN_HEIGHT//5))
 
-        PLAY_BUTTON = Button(image=pygame.image.load(Path("textures/assets/Play Rect.png")), pos=(WIN_WIDTH//2, WIN_HEIGHT//5*2), 
-                            text_input="PLAY", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
-        OPTIONS_BUTTON = Button(image=pygame.image.load(Path("textures/assets/Options Rect.png")), pos=(WIN_WIDTH//2, WIN_HEIGHT//5*3), 
-                            text_input="OPTIONS", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
-        QUIT_BUTTON = Button(image=pygame.image.load(Path("textures/assets/Quit Rect.png")), pos=(WIN_WIDTH//2, WIN_HEIGHT//5*4), 
-                            text_input="QUIT", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+        PLAY_BUTTON = Button(image=pygame.image.load(Path("textures/assets/Play Rect.png")), pos=(WIN_WIDTH//2, WIN_HEIGHT//5*2),
+                             text_input="PLAY", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+        QUIT_BUTTON = Button(image=pygame.image.load(Path("textures/assets/Quit Rect.png")), pos=(WIN_WIDTH//2, WIN_HEIGHT//5*4),
+                             text_input="QUIT", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
 
         WIN.blit(MENU_TEXT, MENU_RECT)
 
-        for button in [PLAY_BUTTON, OPTIONS_BUTTON, QUIT_BUTTON]:
+        for button in [PLAY_BUTTON, QUIT_BUTTON]:
             button.changeColor(MENU_MOUSE_POS)
             button.update(WIN)
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -191,40 +199,36 @@ def main_menu(WIN,exitgame):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
                     play_game(WIN)
-                if OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    pass
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
                     pygame.quit()
                     sys.exit()
 
         pygame.display.update()
-        
-    
+
 
 def main():
     pygame.init()
     WIN = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     pygame.display.set_caption("Shooter_Maze")
     exitgame = False
-    main_menu(WIN,exitgame)
-    
-
-    
+    main_menu(WIN, exitgame)
 
 
 if __name__ == '__main__':
     base_vel = 300
     player_size = (walking[0].get_width() + walking[0].get_height())/2
     player_group = pygame.sprite.Group()
-    player = Player(player_size, WALL_WIDTH*2,WALL_WIDTH*2 )
+    player = Player(player_size, WALL_WIDTH*2, WALL_WIDTH*2)
     player_group.add(player)
     clock = pygame.time.Clock()
-    bullets_group = pygame.sprite.Group()
+    player_bullets = pygame.sprite.Group()
+    enemy_bullets = pygame.sprite.Group()
     playerBullets = []
     enemy_group = pygame.sprite.Group()
-    enemies = [ Enemy(WALL_WIDTH*3,WALL_WIDTH*3)]
+    enemies = [Enemy(WALL_WIDTH*3, WALL_WIDTH*3, enemy_bullets)]
     for enemy in enemies:
         enemy_group.add(enemy)
+        player.add_enenmy(enemy)
     walls_group = pygame.sprite.Group()
     for wall in WALLS_CORDS:
         walls_group.add(Wall(1, 1, wall[0], wall[1]))

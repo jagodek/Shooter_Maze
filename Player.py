@@ -1,5 +1,6 @@
 import pygame as pg
 import numpy as np
+from Enemy import Enemy
 
 from functions import *
 import math
@@ -20,6 +21,10 @@ class Player(pg.sprite.Sprite):
         self.walking = False
         self.health = 10
         self.speed = 1
+        self.enemies = []
+        self.wait_damage = 60
+        self.dmg_ctr = 0
+        self.no_harm = False
 
 
     def update(self,win):
@@ -28,6 +33,13 @@ class Player(pg.sprite.Sprite):
             pg.event.set_blocked(pg.KEYDOWN)
             return
 
+        if self.no_harm:
+            self.dmg_ctr += 1
+            if self.dmg_ctr == self.wait_damage:
+                self.dmg_ctr = 0
+                self.no_harm = False
+        
+        
         if self.walking:
             self.animation_count += 1
         mouse_x, mouse_y = pg.mouse.get_pos()
@@ -46,15 +58,45 @@ class Player(pg.sprite.Sprite):
         newrect[0] -= int(self.image.get_width() / 2)
         newrect[1] -= int(self.image.get_height() / 2)
         self.rect.topleft = newrect
+        self.in_sight()
         # pg.draw.rect(win,(255,0,0),self.rect)
 
     def set_speed(self, val):
         self.speed = val
 
     def move(self, vector):
-        n = math.sqrt(sum([i**2 for i in vector]))
-        if n != 0:
-            vector = [i/n for i in vector]  
+        if not self.health <= 0:
+            n = math.sqrt(sum([i**2 for i in vector]))
+            if n != 0:
+                vector = [i/n for i in vector]  
 
-        self.x += vector[0]*self.speed
-        self.y += vector[1]*self.speed
+            self.x += int(vector[0]*self.speed)
+            self.y += int(vector[1]*self.speed)
+        
+    def take_damage(self):
+        if not self.no_harm:
+            self.health -=1
+            self.no_harm = True
+        
+        
+    
+    def add_enenmy(self,enemy):
+        self.enemies.append(enemy)
+    
+    def in_sight(self):
+        for e in self.enemies:
+            xe,ye = e.get_position()
+            x,y = self.x, self.y
+            x_diff = xe - x
+            y_diff = ye - y
+            r = int(max(x_diff,y_diff))
+            seen = True
+            for i in range(r):
+                if is_wall(x + int(i/r),y + int(i/r)):
+                    seen = False
+                    break
+            e.set_seen(seen)
+            
+                
+                
+            
